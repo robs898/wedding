@@ -9,7 +9,7 @@ When you clone this repository, you'll instantly have the blank `index.html`. To
 ### 1. Configure the Encryption Key
 Create a `.env` file in the root of the repository and add your encryption key:
 ```env
-ENCRYPTION_KEY=ce305de96b643891eec549a7e4447090e11fb328183207d81071f4a0f8d088b1
+ENCRYPTION_KEY=reallyreallyreallyreallyreallylongpassword
 ```
 *(Keep this file safe and never commit it to source control!)*
 
