@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SHA-512 Hash Generator</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=JetBrains+Mono:wght@400&display=swap');
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: #0a0a0f;
+      color: #e8e8f0;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+    }
+
+    .container { width: 100%; max-width: 600px; }
+
+    h1 {
+      text-align: center;
+      font-size: 24px;
+      margin-bottom: 24px;
+      background: linear-gradient(135deg, #6366f1, #a78bfa);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .card {
+      background: #16161f;
+      border: 1px solid #2a2a3a;
+      border-radius: 14px;
+      padding: 24px;
+    }
+
+    label {
+      display: block;
+      font-size: 11px;
+      font-weight: 600;
+      color: #8888a0;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      margin-bottom: 8px;
+    }
+
+    textarea {
+      width: 100%;
+      min-height: 100px;
+      padding: 12px 14px;
+      background: #1c1c28;
+      border: 1px solid #2a2a3a;
+      border-radius: 10px;
+      color: #e8e8f0;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 14px;
+      line-height: 1.6;
+      resize: vertical;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    textarea:focus {
+      border-color: #6366f1;
+      box-shadow: 0 0 0 3px rgba(99,102,241,0.2);
+    }
+
+    button {
+      width: 100%;
+      padding: 13px;
+      margin-top: 16px;
+      border: none;
+      border-radius: 10px;
+      background: linear-gradient(135deg, #6366f1, #8b5cf6);
+      color: #fff;
+      font-family: 'Inter', sans-serif;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: transform 0.15s, box-shadow 0.15s;
+    }
+
+    button:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 4px 16px rgba(99,102,241,0.3);
+    }
+
+    .result {
+      display: none;
+      margin-top: 20px;
+    }
+
+    .result.visible { display: block; }
+
+    .hash {
+      padding: 14px;
+      background: #1c1c28;
+      border: 1px solid #2a2a3a;
+      border-radius: 10px;
+      color: #34d399;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 13px;
+      line-height: 1.8;
+      word-break: break-all;
+      cursor: pointer;
+      transition: border-color 0.2s;
+    }
+
+    .hash:hover { border-color: #34d399; }
+
+    .hint {
+      text-align: center;
+      margin-top: 8px;
+      font-size: 11px;
+      color: #55556a;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🔐 SHA-512 Hash Generator</h1>
+    <div class="card">
+      <label>Input Text</label>
+      <textarea id="input" placeholder="Enter text to hash…"></textarea>
+      <button id="go">Generate Hash</button>
+      <div class="result" id="result">
+        <label>SHA-512 Hash</label>
+        <div class="hash" id="hash" title="Click to copy"></div>
+        <p class="hint" id="hint">Click hash to copy</p>
+      </div>
+    </div>
+  </div>
+  <script>
+    const input = document.getElementById('input');
+    const hash = document.getElementById('hash');
+    const result = document.getElementById('result');
+    const hint = document.getElementById('hint');
+
+    document.getElementById('go').addEventListener('click', async () => {
+      if (!input.value) return input.focus();
+      const buf = await crypto.subtle.digest('SHA-512', new TextEncoder().encode(input.value));
+      hash.textContent = Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, '0')).join('');
+      result.classList.add('visible');
+    });
+
+    hash.addEventListener('click', () => {
+      navigator.clipboard.writeText(hash.textContent);
+      hint.textContent = '✅ Copied!';
+      setTimeout(() => hint.textContent = 'Click hash to copy', 2000);
+    });
+
+    input.addEventListener('keydown', e => {
+      if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) document.getElementById('go').click();
+    });
+  </script>
+</body>
+</html>

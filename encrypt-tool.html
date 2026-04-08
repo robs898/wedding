@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Encrypt Content</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400&display=swap');
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Inter', sans-serif;
+      background: #0a0a0f;
+      color: #e8e8f0;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+    }
+    .container { width: 100%; max-width: 700px; }
+    h1 {
+      text-align: center;
+      font-size: 22px;
+      margin-bottom: 6px;
+      background: linear-gradient(135deg, #6366f1, #a78bfa);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .subtitle {
+      text-align: center;
+      font-size: 13px;
+      color: #8888a0;
+      margin-bottom: 28px;
+    }
+    .card {
+      background: #16161f;
+      border: 1px solid #2a2a3a;
+      border-radius: 14px;
+      padding: 24px;
+    }
+    .row {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 14px;
+    }
+    .field { flex: 1; }
+    .field label {
+      display: block;
+      font-size: 11px;
+      font-weight: 600;
+      color: #8888a0;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      margin-bottom: 6px;
+    }
+    .field input, textarea {
+      width: 100%;
+      padding: 11px 14px;
+      background: #1c1c28;
+      border: 1px solid #2a2a3a;
+      border-radius: 8px;
+      color: #e8e8f0;
+      font-family: 'Inter', sans-serif;
+      font-size: 14px;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    .field input:focus, textarea:focus {
+      border-color: #6366f1;
+      box-shadow: 0 0 0 3px rgba(99,102,241,0.2);
+    }
+    textarea {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 13px;
+      min-height: 160px;
+      resize: vertical;
+      line-height: 1.6;
+    }
+    .field.full { margin-bottom: 14px; }
+    button {
+      width: 100%;
+      padding: 12px;
+      margin-top: 6px;
+      border: none;
+      border-radius: 8px;
+      background: linear-gradient(135deg, #6366f1, #8b5cf6);
+      color: #fff;
+      font-family: 'Inter', sans-serif;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: transform 0.15s, box-shadow 0.15s;
+    }
+    button:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 4px 16px rgba(99,102,241,0.3);
+    }
+    .output {
+      display: none;
+      margin-top: 20px;
+    }
+    .output.visible { display: block; }
+    .output label {
+      display: block;
+      font-size: 11px;
+      font-weight: 600;
+      color: #8888a0;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      margin-bottom: 6px;
+    }
+    .blob {
+      padding: 14px;
+      background: #1c1c28;
+      border: 1px solid #2a2a3a;
+      border-radius: 8px;
+      color: #34d399;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      line-height: 1.6;
+      word-break: break-all;
+      max-height: 200px;
+      overflow-y: auto;
+      cursor: pointer;
+    }
+    .hint {
+      text-align: center;
+      margin-top: 8px;
+      font-size: 11px;
+      color: #55556a;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🔐 Encrypt Secret Content</h1>
+    <p class="subtitle">Encrypt HTML content with AES-256-GCM. Paste the output into secret.html.</p>
+    <div class="card">
+      <div class="row">
+        <div class="field">
+          <label>Username</label>
+          <input type="text" id="username" placeholder="Username">
+        </div>
+        <div class="field">
+          <label>Password</label>
+          <input type="password" id="password" placeholder="Password">
+        </div>
+      </div>
+      <div class="field full">
+        <label>Secret HTML Content</label>
+        <textarea id="content" placeholder="<h1>Secret Page</h1>&#10;<p>This is the hidden content...</p>"></textarea>
+      </div>
+      <button id="encryptBtn">Encrypt</button>
+      <div class="output" id="output">
+        <label>Encrypted Payload (copy this into secret.html)</label>
+        <div class="blob" id="blob" title="Click to copy"></div>
+        <p class="hint" id="hint">Click to copy</p>
+      </div>
+    </div>
+  </div>
+  <script>
+    async function deriveKey(credentials, salt) {
+      const keyMaterial = await crypto.subtle.importKey(
+        'raw', new TextEncoder().encode(credentials), 'PBKDF2', false, ['deriveKey']
+      );
+      return crypto.subtle.deriveKey(
+        { name: 'PBKDF2', salt, iterations: 600000, hash: 'SHA-512' },
+        keyMaterial,
+        { name: 'AES-GCM', length: 256 },
+        false,
+        ['encrypt', 'decrypt']
+      );
+    }
+
+    function toBase64(buf) {
+      return btoa(String.fromCharCode(...new Uint8Array(buf)));
+    }
+
+    document.getElementById('encryptBtn').addEventListener('click', async () => {
+      const user = document.getElementById('username').value.trim();
+      const pass = document.getElementById('password').value;
+      const content = document.getElementById('content').value;
+      if (!user || !pass || !content) return;
+
+      const salt = crypto.getRandomValues(new Uint8Array(16));
+      const iv = crypto.getRandomValues(new Uint8Array(12));
+      const key = await deriveKey(user + ':' + pass, salt);
+
+      const encrypted = await crypto.subtle.encrypt(
+        { name: 'AES-GCM', iv },
+        key,
+        new TextEncoder().encode(content)
+      );
+
+      // Pack as salt:iv:ciphertext (all base64)
+      const payload = toBase64(salt) + '.' + toBase64(iv) + '.' + toBase64(encrypted);
+
+      const blob = document.getElementById('blob');
+      blob.textContent = payload;
+      document.getElementById('output').classList.add('visible');
+    });
+
+    document.getElementById('blob').addEventListener('click', () => {
+      navigator.clipboard.writeText(document.getElementById('blob').textContent);
+      document.getElementById('hint').textContent = '✅ Copied!';
+      setTimeout(() => document.getElementById('hint').textContent = 'Click to copy', 2000);
+    });
+  </script>
+</body>
+</html>
