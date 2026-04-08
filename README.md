@@ -18,7 +18,20 @@ To ensure `index.html` is automatically encrypted on every commit, link the `pre
 
 **On Mac/Linux/WSL:**
 ```bash
-cp encrypt.sh .git/hooks/pre-commit
+vim .git/hooks/pre-commit
+
+    #!/bin/bash
+    # .git/hooks/pre-commit
+    # Calls the version-controlled encrypt.sh script in the repository root
+
+    DIR="$(cd "$(dirname "$0")/../.." && pwd)"
+
+    if [ -f "$DIR/encrypt.sh" ]; then
+    bash "$DIR/encrypt.sh"
+    else
+    echo "[Warning] encrypt.sh missing from repo root. Skipping auto-encryption."
+    fi
+
 chmod +x .git/hooks/pre-commit
 ```
 
