@@ -58,48 +58,9 @@ else:
 payload = base64.b64encode(salt).decode() + '.' + base64.b64encode(iv).decode() + '.' + base64.b64encode(ciphertext_with_tag).decode()
 
 import re
-if os.path.exists('index.html'):
-    with open('index.html', 'r', encoding='utf-8') as f:
-        html = f.read()
-    html = re.sub(r"const E='[^']*'", f"const E='{payload}'", html)
-else:
-    html = f'''<!DOCTYPE html>
-<html><head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>.</title>
-<style>
-*{{margin:0;padding:0;box-sizing:border-box}}
-html,body{{height:100%;background:#0a0a0a}}
-body{{display:flex;align-items:center;justify-content:center}}
-#k{{background:transparent;border:none;border-bottom:1px solid rgba(255,255,255,0.06);color:transparent;caret-color:rgba(255,255,255,0.15);font-size:16px;padding:8px 0;width:200px;outline:none;text-align:center;letter-spacing:2px;-webkit-text-security:disc;transition:border-color 0.3s;}}
-#k:focus{{border-bottom-color:rgba(255,255,255,0.12)}}
-#k.e{{border-bottom-color:rgba(180,40,40,0.4);animation:s .4s}}
-@keyframes s{{0%,100%{{transform:translateX(0)}} 20%,60%{{transform:translateX(-6px)}} 40%,80%{{transform:translateX(6px)}}}}
-</style>
-</head>
-<body>
-<input type="password" id="k" autocomplete="off" spellcheck="false" autofocus>
-<script>
-const E='{payload}';
-function b(s){{return Uint8Array.from(atob(s),c=>c.charCodeAt(0))}}
-document.getElementById('k').addEventListener('keydown',async function(e){{
-  if(e.key!=='Enter')return;
-  const v=e.target.value;if(!v)return;
-  try{{
-    const p=E.split('.');
-    const salt=b(p[0]),iv=b(p[1]),ct=b(p[2]);
-    const km=await crypto.subtle.importKey('raw',new TextEncoder().encode(v),'PBKDF2',false,['deriveKey']);
-    const key=await crypto.subtle.deriveKey({{name:'PBKDF2',salt:salt,iterations:600000,hash:'SHA-256'}},km,{{name:'AES-GCM',length:256}},false,['decrypt']);
-    const d=await crypto.subtle.decrypt({{name:'AES-GCM',iv:iv}},key,ct);
-    document.open();document.write(new TextDecoder().decode(d));document.close();
-  }}catch(err){{
-    e.target.value='';e.target.classList.add('e');
-    setTimeout(function(){{e.target.classList.remove('e')}},400);
-  }}
-}});
-</script>
-</body></html>'''
+with open('index.html', 'r', encoding='utf-8') as f:
+    html = f.read()
+html = re.sub(r"const E='[^']*'", f"const E='{payload}'", html)
 
 with open('index.html', 'w', encoding='utf-8') as f:
     f.write(html)
