@@ -60,7 +60,7 @@ payload = base64.b64encode(salt).decode() + '.' + base64.b64encode(iv).decode() 
 import re
 with open('index.html', 'r', encoding='utf-8') as f:
     html = f.read()
-html = re.sub(r"const E='[^']*'", f"const E='{payload}'", html)
+html = re.sub(r"const\s+E\s*=\s*'[^']*'", f"const E = '{payload}'", html)
 
 with open('index.html', 'w', encoding='utf-8') as f:
     f.write(html)
