@@ -9,8 +9,8 @@ cd "$DIR"
 if [ -f "content.html" ] && [ -f ".env" ]; then
   echo "🔐 Encrypting content.html → index.html..."
 
-  # Define the Python script
-  PY_SCRIPT="
+  # Dump the Python script to a temporary file to avoid Bash quoting issues
+  cat << 'EOF' > .temp_encrypt.py
 import os, hashlib, base64, sys
 
 USE_CRYPTOGRAPHY = False
@@ -57,10 +57,16 @@ else:
 
 payload = base64.b64encode(salt).decode() + '.' + base64.b64encode(iv).decode() + '.' + base64.b64encode(ciphertext_with_tag).decode()
 
-html = f'''<!DOCTYPE html>
+import re
+if os.path.exists('index.html'):
+    with open('index.html', 'r', encoding='utf-8') as f:
+        html = f.read()
+    html = re.sub(r"const E='[^']*'", f"const E='{payload}'", html)
+else:
+    html = f'''<!DOCTYPE html>
 <html><head>
-<meta charset=\"UTF-8\">
-<meta name=\"viewport\" content=\"width=device-width,initial-scale=1\">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
 <title>.</title>
 <style>
 *{{margin:0;padding:0;box-sizing:border-box}}
@@ -73,7 +79,7 @@ body{{display:flex;align-items:center;justify-content:center}}
 </style>
 </head>
 <body>
-<input type=\"password\" id=\"k\" autocomplete=\"off\" spellcheck=\"false\" autofocus>
+<input type="password" id="k" autocomplete="off" spellcheck="false" autofocus>
 <script>
 const E='{payload}';
 function b(s){{return Uint8Array.from(atob(s),c=>c.charCodeAt(0))}}
@@ -97,18 +103,27 @@ document.getElementById('k').addEventListener('keydown',async function(e){{
 
 with open('index.html', 'w', encoding='utf-8') as f:
     f.write(html)
-"
+EOF
 
   # Detect the valid python environment to use.
   if command -v wsl >/dev/null 2>&1 && wsl python3 -c 'import sys; sys.exit(0)' 2>/dev/null; then
-      wsl python3 -c "$PY_SCRIPT" || exit 1
+      wsl python3 .temp_encrypt.py
+      RET=$?
   elif python3 -c 'import sys; sys.exit(0)' 2>/dev/null; then
-      python3 -c "$PY_SCRIPT" || exit 1
+      python3 .temp_encrypt.py
+      RET=$?
   elif python -c 'import sys; sys.exit(0)' 2>/dev/null; then
-      python -c "$PY_SCRIPT" || exit 1
+      python .temp_encrypt.py
+      RET=$?
   else
-      echo "[Error] Python is required to encrypt the payload. Please install Python or run from inside WSL."
-      exit 1
+      echo "[Error] Python is required to encrypt the payload. Please install Python."
+      RET=1
+  fi
+  
+  rm -f .temp_encrypt.py
+  
+  if [ $RET -ne 0 ]; then
+      exit $RET
   fi
 
   # Support running stand-alone vs inside a git hook
