@@ -11,7 +11,7 @@ with open('content.html', 'r', encoding='utf-8') as f:
 
 salt = os.urandom(16)
 iv = os.urandom(12)
-key = hashlib.pbkdf2_hmac('sha256', passphrase.encode('utf-8'), salt, 600000, dklen=32)
+key = hashlib.pbkdf2_hmac('sha256', passphrase.encode('utf-8'), salt, 2000000, dklen=32)
 aesgcm = AESGCM(key)
 ciphertext_with_tag = aesgcm.encrypt(iv, content.encode('utf-8'), None)
 payload = base64.b64encode(salt).decode() + '.' + base64.b64encode(iv).decode() + '.' + base64.b64encode(ciphertext_with_tag).decode()
