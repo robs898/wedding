@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
-import os, hashlib, base64, sys
+import os, hashlib, base64, sys, re
 from cryptography.hazmat.primitives.ciphers.aead import AESGCM
-import re
 
 with open('.env', 'r') as f:
     passphrase = next((line.split('=', 1)[1].strip() for line in f if line.startswith('ENCRYPTION_KEY=')), None)
