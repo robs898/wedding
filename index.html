@@ -1,15 +1,21 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>Wedding Invitation</title>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=Inter:wght@300;400;500&display=swap');
-    
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    
-    html, body {
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    html,
+    body {
       height: 100%;
       background: #0a0a0a;
       color: #f5f0e8;
@@ -27,8 +33,15 @@
     }
 
     @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(10px); }
-      to { opacity: 1; transform: translateY(0); }
+      from {
+        opacity: 0;
+        transform: translateY(10px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
     }
 
     h1 {
@@ -91,17 +104,30 @@
     }
 
     @keyframes shake {
-      0%, 100% { transform: translateX(0); }
-      20%, 60% { transform: translateX(-6px); }
-      40%, 80% { transform: translateX(6px); }
+
+      0%,
+      100% {
+        transform: translateX(0);
+      }
+
+      20%,
+      60% {
+        transform: translateX(-6px);
+      }
+
+      40%,
+      80% {
+        transform: translateX(6px);
+      }
     }
   </style>
 </head>
+
 <body>
   <div class="login-container">
     <h1>You're Invited</h1>
     <p>Please enter the secret passphrase included in your formal invitation to access the wedding details.</p>
-    
+
     <div class="input-wrapper">
       <input type="password" id="k" autocomplete="off" spellcheck="false" autofocus placeholder="Passphrase">
       <span class="hint">Press Enter to unlock</span>
@@ -117,7 +143,7 @@
         const p = E.split('.');
         const salt = b(p[0]), iv = b(p[1]), ct = b(p[2]);
         const km = await crypto.subtle.importKey('raw', new TextEncoder().encode(v), 'PBKDF2', false, ['deriveKey']);
-        const key = await crypto.subtle.deriveKey({ name: 'PBKDF2', salt: salt, iterations: 600000, hash: 'SHA-256' }, km, { name: 'AES-GCM', length: 256 }, false, ['decrypt']);
+        const key = await crypto.subtle.deriveKey({ name: 'PBKDF2', salt: salt, iterations: 2000000, hash: 'SHA-256' }, km, { name: 'AES-GCM', length: 256 }, false, ['decrypt']);
         const d = await crypto.subtle.decrypt({ name: 'AES-GCM', iv: iv }, key, ct);
         document.open(); document.write(new TextDecoder().decode(d)); document.close();
       } catch (err) {
