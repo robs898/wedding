@@ -21,8 +21,8 @@ To ensure `index.html` is automatically encrypted on every commit, link the `pre
 vim .git/hooks/pre-commit
 
 #!/bin/bash
-DIR="$(cd "$(dirname "$0")/../.." && pwd)"
-bash "$DIR/encrypt.sh"
+python3 encrypt.py
+git add index.html
 
 chmod +x .git/hooks/pre-commit
 ```
@@ -30,8 +30,8 @@ chmod +x .git/hooks/pre-commit
 ## How It Works
 
 1. **Edit the content:** Make all your text and design changes in `content.html`. 
-2. **Commit:** When you `git commit`, the pre-commit hook executes `encrypt.sh`.
-3. **Encryption:** `encrypt.sh` generates a secure payload using your key from `.env` and embeds it directly into a fresh `index.html`.
+2. **Commit:** When you `git commit`, the pre-commit hook executes `encrypt.py`.
+3. **Encryption:** `encrypt.py` generates a secure payload using your key from `.env` and embeds it directly into a fresh `index.html`.
 4. **Push:** You safely push the `index.html` to GitHub, keeping your venue, timings, and names exclusively available to guests with the password. 
 
 *Note: The script requires Python to be installed locally (or via WSL).*
